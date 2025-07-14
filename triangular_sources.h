@@ -1,18 +1,17 @@
 #include <vector>
 using namespace std;
 
-typedef vector<vector<char>> matrix2D;
 
 //Matrix struct constructor
 //x - amount of coding matrixes
 //y - amount of original packets used in one coded packet
 //z - packet length
 struct Matrix{
-    vector<vector<vector<char>>> data;
-    int x,y,z;
+    vector<vector<char>> data;
+    int x,y;
 
     Matrix();
-    Matrix(int x, int y, int z);
+    Matrix(int y, int x);
 };
 typedef struct Matrix matrix;
 
@@ -21,9 +20,10 @@ typedef struct Matrix matrix;
 struct Packet{
     vector<char> data;
     int size;
+    int packet_id;
 
     Packet();
-    Packet(int size);
+    Packet(int size, int packet_id);
 };
 typedef struct Packet packet;
 
@@ -32,11 +32,7 @@ typedef struct Packet packet;
 void generate_original_packets(vector<packet*> packets_vector, int batch_size, int packet_size);
 
 //packet_lentgh = original packet size in bits
-void fill_coding_matrix(matrix* matrix_ptr,int matrix_id,vector<packet*> packets_vector, int packet_length,
-    int zero_bits, int packets_amount, int batch_size)
+void fill_matrix(matrix* matrix_ptr,int matrix_id,vector<packet*> packets_vector, int packet_length,
+    int zero_bits, int packets_amount, int batch_size);
 
-
-
-
-
-//void fill_matrix(int size, matrix& to_fill, packet_header& header);
+void print_matrix(matrix* matrix_ptr);

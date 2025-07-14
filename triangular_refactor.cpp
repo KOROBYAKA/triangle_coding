@@ -6,7 +6,6 @@
 #include <vector>
 #include "triangular_sources.h"
 
-using namespace std;
 
 //save output to file
 ofstream out0 ("results.txt", ios::out);

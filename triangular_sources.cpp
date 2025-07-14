@@ -3,31 +3,39 @@
 #include <iostream>
 #include <math.h>
 #include <stdarg.h>
+#include <vector>
 #include "triangular_sources.h"
 
-/*void fill_matrix(int size, matrix& to_fill, packet_header& header){};*/
+#define XOR(a,b)  (a == b)? '0':'1'
 
-//Matrix struct constructor
-//x - amount of coding matrixes
-//y - amount of original packets used in one coded packet (lines)
-//z - packet length (lines length)
-Matrix::Matrix(int x, int y, int z){
+//x - length of matrix rows
+//y - amount of rows in matrix
+Matrix::Matrix(int y, int x){
     this->x = x;
     this->y = y;
-    this->z = z;
-    this->data.resize(x,vector<vector<char>>(y,vector<char>(z, 'u')));
+    this->data = vector(y,vector<char>(x, 'u'));
 };
 
+void print_matrix(matrix* matrix_ptr){
+    cout<<"Matrix params(rows:"<<matrix_ptr->y<<",columns"<<matrix_ptr->x<<"):"<<endl;
+    for(int i=0;i<matrix_ptr->y;i++){
+        for(int j=0;matrix_ptr->x;j++){
+            cout<<matrix_ptr->data[i][j];
+        }
+        cout<<endl;
+    }
+}
+
+
+
 //packet_length = original packet size in bits
-void fill_coding_matrix(matrix* matrix_ptr,int matrix_id,vector<packet*> packets_vector, int packet_length,
-    int zero_bits, int packets_amount, int batch_size)
-{
-    matrix2D& matr = matrix_ptr->data[matrix_id];//Takes desirable coding matrix from all matrixes
+void fill_matrix(matrix* to_fill,int matrix_id,vector<packet*> packets_vector, int packet_length,
+    int zero_bits, int packets_amount, int batch_size){
     int j;
     for(int i=0;i<packets_amount-1;i++){
         packet* pk = packets_vector[(i+matrix_id)%batch_size];
-        vector<char>& row = matr[i];
-        //Adding header zeroes
+        vector<char>& row = to_fill->data[i];
+        //Adding header zero
         for(j=0;j<i;j++){
             row[j]='0';
         }
@@ -42,25 +50,44 @@ void fill_coding_matrix(matrix* matrix_ptr,int matrix_id,vector<packet*> packets
     }
     //Filling last packet
     for(j=0;j<zero_bits;j++){
-        matr[packets_amount-1][j] = '0';
+        to_fill->data[packets_amount-1][j] = '0';
     }
     for(j=j;j<(packet_length);j++){
-        matr[packets_amount-1][j] = packets_vector[(matrix_id+packets_amount-1)%batch_size]->data[j-zero_bits];
+        to_fill->data[packets_amount-1][j] = packets_vector[(matrix_id+packets_amount-1)%batch_size]->data[j-zero_bits];
     }
 }
 
 //Packet struct constructor
-Packet::Packet(int size){
-    data = vector<char>(size,'u');
+Packet::Packet(int size, int packet_id){
+    this->data = vector<char>(size,'u');
+    this->packet_id = packet_id;
 }
 
 void generate_original_packets(vector<packet*> packets_vector, int batch_size, int packet_size){
+    vector<char>* data;
     for(int i=0;i<batch_size;i++){
-        packet pk = packet(packet_size);
+        packet pk = packet(packet_size, i);
         packets_vector[i] = &pk;
+        data = &pk.data;
         for(int j=0;j<packet_size;j++){
             //filling a packet with random 0 or 1
-            packets_vector[i][j] = rand()%2;
+            packets_vector[i]->data[j] = rand()%2;
         }
+    }
+}
+
+void encode_packet(matrix* matrix_ptr, packet* pk){
+    vector<char> buff(matrix_ptr->y);
+    char res;
+    int j;
+    for(int i=0;i<matrix_ptr->x;i++){
+        for(j=0;j<matrix_ptr->y;j++){
+            buff[j] = matrix_ptr->data[i][j];
+        }
+        res = XOR(buff[0],buff[1]);
+        for(j=2;j<buff.size();j++){
+            res = XOR(res,buff[j]);
+        }
+        pk->data[i] = res;
     }
 }
