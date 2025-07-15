@@ -32,11 +32,14 @@ void print_matrix(matrix* matrix_ptr){
 
 //packet_length = original packet size in bits
 void fill_matrix(matrix* to_fill,int matrix_id,vector<packet*>* packets_vector, int packet_length, int zero_bits, int packets_amount, int batch_size){
-    int j;
+    int j,pk_id;
     //cout<<"[DEBUG]\nStart encoding"<<endl;
     for(int i=0;i<packets_amount-1;i++){
+        pk_id = (i+matrix_id)%batch_size;
         //cout<<"[DEBUG]\nPacket ["<<i<<"] encoding: start"<<endl;
-        packet* pk = (*packets_vector)[(i+matrix_id)%batch_size];
+        packet* pk = (*packets_vector)[pk_id];
+        //cout<<"pk_id:"<<pk_id<<" matrix_id:"<<matrix_id<<endl;
+        //print_packet(pk);
         vector<char>& row = to_fill->data[i];
         //Adding header zero
         for(j=0;j<i;j++){
@@ -59,8 +62,11 @@ void fill_matrix(matrix* to_fill,int matrix_id,vector<packet*>* packets_vector, 
     for(j=0;j<zero_bits;j++){
         to_fill->data[packets_amount-1][j] = '0';
     }
+    pk_id = (matrix_id+packets_amount-1)%batch_size;
+    //cout<<"pk_id:"<<pk_id<<" matrix_id:"<<matrix_id<<endl;
+    //print_packet((*packets_vector)[pk_id]);
     for(j=j;j<(packet_length+zero_bits);j++){
-        to_fill->data[packets_amount-1][j] = (*packets_vector)[(matrix_id+packets_amount-1)%batch_size]->data[j-zero_bits];
+        to_fill->data[packets_amount-1][j] = (*packets_vector)[pk_id]->data[j-zero_bits];
     }
 }
 
@@ -72,7 +78,7 @@ Packet::Packet(int size, int packet_id){
 }
 
 void print_packet(packet* pk){
-    cout<<"Printing a packet[ID"<<pk->packet_id<<"]:";
+    cout<<"Printing a packet[ID"<<pk->packet_id<<"]:\n";
     for(int i=0;i<pk->size;i++){
         cout<<pk->data[i];
     }
@@ -97,9 +103,10 @@ void encode_packet(matrix* matrix_ptr, packet* pk){
     vector<char> buff(matrix_ptr->y);
     char res;
     int j;
+    //cout<<"[DEBUG]\nStart encoding packet["<<pk->packet_id<<"]"<<endl;
     for(int i=0;i<matrix_ptr->x;i++){
         for(j=0;j<matrix_ptr->y;j++){
-            buff[j] = matrix_ptr->data[i][j];
+            buff[j] = matrix_ptr->data[j][i];
         }
         res = XOR(buff[0],buff[1]);
         for(j=2;size_t(j)<buff.size();j++){

@@ -36,3 +36,5 @@ void generate_original_packets(vector<packet*> &packets_vector, int batch_size, 
 void fill_matrix(matrix* to_fill,int matrix_id,vector<packet*>* packets_vector, int packet_length, int zero_bits, int packets_amount, int batch_size);
 
 void print_matrix(matrix* matrix_ptr);
+
+void encode_packet(matrix* matrix_ptr, packet* pk);
