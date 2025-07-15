@@ -44,18 +44,29 @@ int main(){
     // decoder failure, the decoder "requests" for additional coded packet from
     // the sender.
 
+    int matrix_id = 0;
     //Generating original data packets
-    vector<packet*> original_packets;
-    generate_original_packets(original_packets,batch_size,(data_length*8));
-    int ceil(avg_sparsity);
-
-
-
-
-
-
-
-
+    vector<packet*> original_packets(batch_size);
+    cout<<"[DEBUG]"<<endl<<"Creating original packets"<<endl;
+    generate_original_packets(original_packets, batch_size, (data_length*8));
+    int packets_in_matrix = ceil(avg_sparsity);
+    //cout<<"[DEBUG]\n"<<original_packets.size()<<endl;
+    for(size_t i=0;i<original_packets.size();i++){
+        print_packet(original_packets[i]);
+    }
+    //cout<<"[DEBUG]\nEncoding matrixes: allocating"<<endl;
+    vector<matrix*> encoding_matrixes(batch_size);
+    for(int i=0;i<batch_size;i++){
+    encoding_matrixes[i] = new matrix(packet_size,packets_in_matrix);
+    }
+    cout<<"[DEBUG]\nEncoding matrixes are allocated"<<endl;
+    for(int i=0;i<batch_size;i++){
+        fill_matrix(encoding_matrixes[i],matrix_id,&original_packets, data_length*8, zero_bits, packets_in_matrix, batch_size);
+    }
+    cout<<"[DEBUG]\nEncoding matrixes are encoded:"<<endl;
+    for(int i=0;i<batch_size;i++){
+        print_matrix(encoding_matrixes[i]);
+    }
 
     return 0;
 }

@@ -1,1 +1,6 @@
-triangular_copy.cpp
+*
+!triangular_refactor.cpp
+!triangular_sources.cpp
+!triangular_sources.h
+!build.sh
+!build-release.sh
